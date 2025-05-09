@@ -22,7 +22,7 @@ def baseline_naive_bayes(train_set, test_set):
     nb_classifier = MultinomialNB()
     nb_classifier.fit(X_train_tfidf, y_train)
 
-    # Make predictions on the development set
+    # Make predictions on the test set
     y_pred = nb_classifier.predict(X_test_tfidf)
 
     # Calculate evaluation metrics

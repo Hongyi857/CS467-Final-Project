@@ -6,16 +6,13 @@ from config import BERT_MAX_LEN
 class NewsDataset(Dataset):
 
     def __init__(self, data, tokenizer, max_length=BERT_MAX_LEN):
-        """
-        data: a Hugging Face dataset split (list/dict-like) with keys "text" and "label".
-        """
         self.data = data
         self.tokenizer = tokenizer
         self.max_length = max_length
 
     def __len__(self):
         return len(self.data)
-
+    #Setting up the get function of the dataset
     def __getitem__(self, index):
         text = self.data[index]["text"]
         label = self.data[index]["label"]

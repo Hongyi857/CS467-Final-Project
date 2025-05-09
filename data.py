@@ -4,19 +4,19 @@ import pandas as pd
 import re
 from config import HF_TOKEN, DEV_SIZE, SEED
 
-
+# Only for baseline
 def clean_text(text: str):
     text = text.lower()
     text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
     return text
 
-
+# Only for baseline
 def preprocess_dataset(dataset):
     df = pd.DataFrame(dataset)
     df["text"] = df["text"].apply(clean_text)
     return df
 
-
+# For DistilBERT
 def prepare_data_full(dev_size: int = DEV_SIZE, seed: int = SEED):
     dataset = load_dataset("fancyzhx/ag_news", token=HF_TOKEN)
     train_orig, test_orig = dataset["train"], dataset["test"]
@@ -32,7 +32,9 @@ def prepare_data_full(dev_size: int = DEV_SIZE, seed: int = SEED):
     # new_train = new_train.select(range(3000))
     # new_dev = new_dev.select(range(240))
     # test_orig = test_orig.select(range(3000))
+    
 
+    # Checking the dataset sizes.
     print("Sizes:", len(new_train), len(new_dev), len(test_orig))
     print("Train dist:", Counter(new_train["label"]))
     print("Dev   dist:", Counter(new_dev["label"]))

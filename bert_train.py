@@ -20,6 +20,7 @@ class LoRADistilBertClassifier(nn.Module):
         super().__init__()
         # load base DistilBERT
         self.bert = DistilBertModel.from_pretrained(model_name)
+        # apply LoRA
         lora_cfg = LoraConfig(
             r=8,
             lora_alpha=32,
@@ -39,8 +40,10 @@ class LoRADistilBertClassifier(nn.Module):
             input_ids=input_ids,
             attention_mask=attention_mask,
         )
-        hidden_states = outputs.last_hidden_state  # [batch, seq_len, hidden]
-        pooled_output = hidden_states[:, 0]  # CLS token
+        # Retrieve the token that represents the sequence
+        hidden_states = outputs.last_hidden_state  
+        pooled_output = hidden_states[:, 0]  
+        
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         return logits
@@ -92,11 +95,12 @@ def evaluate_bert_model(model, tokenizer,data_loader):
             labels = batch["labels"]
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
             predictions = torch.argmax(outputs, dim=1)
+
             all_preds.extend(predictions.tolist())
             all_labels.extend(labels.tolist())
+            # For error analysis
             for i in range(len(labels)):
                 if predictions[i] != labels[i]:
-                    # Save a tuple (decoded text, true label, predicted label)
 
                     decoded_text = tokenizer.decode(
                         input_ids[i], skip_special_tokens=True
@@ -119,7 +123,7 @@ def evaluate_bert_model(model, tokenizer,data_loader):
             )
     else:
         print("\nNo misclassified examples found.")
-    model.train()  # revert back to training mode
+    model.train()  # Go back to training
     acc = accuracy_score(all_labels, all_preds)
     report = classification_report(
         all_labels,

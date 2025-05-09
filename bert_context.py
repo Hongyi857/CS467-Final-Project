@@ -7,9 +7,7 @@ from sklearn.metrics import classification_report
 
 
 class InContextLearner:
-    """
-    Encapsulates in-context learning logic using a frozen DistilBERT MLM.
-    """
+    # Encapsulate the In-Context Learning
 
     def __init__(
         self, model_name: str = BERT_MODEL, shots: int = ICL_SHOTS, seed: int = 42
@@ -30,7 +28,7 @@ class InContextLearner:
             2: "Business",
             3: "Science",
         }
-        # Map label IDs to single-token IDs
+        # Map label IDs to token IDs
         self.label_tokens = {
             label: self.tokenizer.convert_tokens_to_ids(
                 self.tokenizer.tokenize(lbl_str)[0]
@@ -39,20 +37,18 @@ class InContextLearner:
         }
 
     def build_prompt(self, demos: list[dict], query_text: str) -> str:
-        """
-        Construct a cloze-style prompt from demonstration examples and a query text.
-        """
         prompt = ""
+        # No instruction needed for BERT
         for d in demos:
+            # Insert demonstration
             prompt += f"News article: {d['text']}\n Genre: {d['label']}\n"
         prompt += f"News article: {query_text}\n Genre: {self.tokenizer.mask_token}\n"
         return prompt
 
     def predict_label(self, prompt: str) -> int:
-        """
-        Run the model on the prompt, return the label ID with highest masked-token score.
-        """
+        # Extract the probability distribution at the masked token position, find the probability for the label tokens, then compare
         inputs = self.tokenizer(prompt, return_tensors="pt")
+
         mask_bool = (inputs["input_ids"][0] == self.tokenizer.mask_token_id)
 
         mask_positions = mask_bool.nonzero(as_tuple=True)[0].item()
@@ -66,10 +62,7 @@ class InContextLearner:
         return max(scores, key=scores.get)
 
     def evaluate(self, train_data, eval_data):
-        """
-        Perform k‑shot in‑context evaluation *without* reusing any support example
-        across the entire evaluation set. Returns (accuracy, classification_report).
-        """
+        # want to make sure each test case has different demonstrations
         train_list = list(train_data)
         total      = len(eval_data)
         needed     = self.shots * total
